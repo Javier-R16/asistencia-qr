@@ -30,6 +30,10 @@ Datos en **Google Sheets**; la lógica corre en **Apps Script**; la app es un so
 
 > Si cambias `Code.gs`, publícalo con *Implementar → Gestionar implementaciones → Editar → Nueva versión* para que la URL `/exec` siga siendo la misma.
 
+## App Android (APK)
+
+Cada cambio en `android/` compila la APK automáticamente con GitHub Actions y la publica en **Releases → «Asistencia QR (APK para Android)»**. La app abre el sistema ya conectado a tu hoja, pide permiso de cámara, guarda los Excel en Descargas e imprime los carnets con el servicio de impresión de Android. La dirección que abre está en `android/app/src/main/res/values/strings.xml` (`app_url`); para otro cliente cambia el `api=`.
+
 ## Para los equipos de la entrada
 
 En *Ajustes → Enlace para los equipos de escaneo* está el enlace `…/index.html?api=…`. Ábrelo en el celular o tablet de la puerta, entra con la **clave de escáner** y pulsa «Iniciar cámara».
