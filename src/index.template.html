@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0b1b3f">
+<title>Asistencia QR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+:root{--azul:#0b1b3f;--azul2:#13306b;--pri:#2563eb;--ok:#16a34a;--warn:#d97706;--err:#dc2626;--gris:#64748b;--borde:#e2e8f0;--fondo:#f1f5f9;
+  --c1:#7a1424;--c2:#c026d3;--c3:#f5c542}
+*{box-sizing:border-box}
+html,body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--fondo);color:#0f172a;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit}
+.hidden{display:none!important}
+.btn{border:1px solid var(--borde);background:#fff;color:#0f172a;padding:.65rem 1rem;border-radius:.7rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.peligro{color:var(--err)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.sm{padding:.4rem .7rem;font-size:.85rem}
+input,select,textarea{width:100%;padding:.65rem .8rem;border:1px solid var(--borde);border-radius:.7rem;background:#fff;color:#0f172a}
+input[type=color]{padding:.15rem;height:2.6rem}
+input[type=checkbox]{width:auto}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--gris);margin:.6rem 0 .3rem}
+.row{display:flex;gap:.6rem;align-items:center}
+.row>*{flex:1}
+.row>.btn{flex:0 0 auto}
+.card{background:#fff;border-radius:1rem;padding:1rem;box-shadow:0 1px 3px rgba(15,23,42,.08);margin-bottom:1rem}
+.card h3{margin:0 0 .6rem;font-size:1rem}
+.hint{font-size:.8rem;color:var(--gris);margin:.5rem 0 0}
+.grid2{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:900px){.grid2{grid-template-columns:1fr 1fr}}
+
+/* ---------- Login ---------- */
+#login{min-height:100vh;display:grid;place-items:center;padding:1.2rem;background:radial-gradient(circle at 50% 0,#1d4ed8 0,#0b1b3f 60%)}
+.login-box{width:100%;max-width:400px;background:#fff;border-radius:1.2rem;padding:1.6rem;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.marca{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.35rem}
+.marca .ico{width:2.4rem;height:2.4rem;border-radius:.7rem;background:var(--pri);display:grid;place-items:center;color:#fff}
+.login-box p{color:var(--gris);font-size:.9rem}
+.err{color:var(--err);font-size:.85rem;min-height:1.2em;margin:.5rem 0}
+.link{background:none;border:0;color:var(--pri);font-weight:600;cursor:pointer;padding:0}
+
+/* ---------- App ---------- */
+header.top{position:sticky;top:0;z-index:20;background:var(--azul);color:#fff;padding:.7rem 1rem;display:flex;align-items:center;gap:.7rem}
+header.top img{width:2.2rem;height:2.2rem;object-fit:contain;border-radius:.5rem;background:#fff}
+header.top .org{font-weight:800;line-height:1.1;flex:1;min-width:0}
+header.top .org small{display:block;font-weight:500;opacity:.7;font-size:.75rem}
+.pill{display:inline-block;padding:.2rem .6rem;border-radius:99px;font-size:.72rem;font-weight:700;background:rgba(255,255,255,.15)}
+main{max-width:1100px;margin:0 auto;padding:1rem 1rem 6rem}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid var(--borde);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;max-width:140px;background:none;border:0;padding:.55rem 0 .5rem;color:var(--gris);font-size:.7rem;font-weight:600;cursor:pointer}
+nav.tabs button svg{display:block;margin:0 auto .15rem;width:1.45rem;height:1.45rem}
+nav.tabs button.on{color:var(--pri)}
+body.rol-escaner .adminOnly{display:none!important}
+body:not(.demo) .demoOnly{display:none!important}
+
+/* ---------- Escáner ---------- */
+.scan-wrap{max-width:520px;margin:0 auto}
+.cam{position:relative;aspect-ratio:3/4;background:#0b1b3f;border-radius:1.2rem;overflow:hidden;margin-bottom:.8rem}
+.cam video{width:100%;height:100%;object-fit:cover}
+.cam .marco{position:absolute;inset:18% 14%;border-radius:1rem;box-shadow:0 0 0 999px rgba(11,27,63,.45);border:3px solid rgba(255,255,255,.9)}
+.cam .linea{position:absolute;left:16%;right:16%;height:2px;background:#22c55e;box-shadow:0 0 12px #22c55e;top:20%;animation:barrido 2s ease-in-out infinite alternate}
+@keyframes barrido{to{top:80%}}
+.cam-msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#fff;padding:2rem;font-weight:600}
+.contador{display:flex;align-items:center;gap:.6rem;background:#fff;border-radius:1rem;padding:.8rem 1rem;margin:.8rem 0;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.contador span{flex:1;color:var(--gris);font-weight:600}
+.contador b{font-size:1.8rem;color:var(--ok)}
+.contador small{color:var(--gris)}
+.res{position:fixed;inset:0;z-index:60;background:rgba(11,27,63,.55);display:grid;place-items:center;padding:1rem;backdrop-filter:blur(3px)}
+.res-card{width:100%;max-width:360px;background:#fff;border-radius:1.4rem;padding:1.6rem 1.2rem 1.2rem;text-align:center;animation:pop .25s ease-out;position:relative;overflow:hidden}
+@keyframes pop{from{transform:scale(.85);opacity:0}}
+.res-icono{width:3rem;height:3rem;border-radius:50%;margin:0 auto .6rem;display:grid;place-items:center;color:#fff;font-size:1.6rem;font-weight:800}
+.res-foto{width:8.5rem;height:8.5rem;border-radius:50%;margin:0 auto .8rem;background:#e2e8f0 center/cover;display:grid;place-items:center;font-size:2.4rem;font-weight:800;color:#94a3b8;border:4px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.res-card h2{margin:.2rem 0;font-size:1.3rem}
+.res-card .sub{color:var(--gris);margin:0 0 .8rem}
+.res-estado{display:inline-block;padding:.45rem 1rem;border-radius:99px;color:#fff;font-weight:700}
+.res-barra{position:absolute;left:0;bottom:0;height:5px;background:currentColor;animation:baja linear forwards}
+@keyframes baja{from{width:100%}to{width:0}}
+
+/* ---------- Panel ---------- */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-bottom:1rem}
+@media(min-width:700px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:#fff;border-radius:1rem;padding:.9rem 1rem;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.kpi small{color:var(--gris);font-weight:600}
+.kpi b{display:block;font-size:1.9rem;margin-top:.2rem}
+.barra{margin:.55rem 0}
+.barra .t{display:flex;justify-content:space-between;font-size:.85rem;font-weight:600}
+.barra .b{height:.55rem;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:.25rem}
+.barra .b i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.seg{display:flex;background:var(--fondo);border-radius:.7rem;padding:.25rem;margin-bottom:.6rem}
+.seg button{flex:1;border:0;background:none;padding:.5rem;border-radius:.5rem;font-weight:600;color:var(--gris);cursor:pointer}
+.seg button.on{background:#fff;color:#0f172a;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+
+/* ---------- Listas ---------- */
+.item{display:flex;align-items:center;gap:.7rem;padding:.6rem .2rem;border-bottom:1px solid var(--borde)}
+.item:last-child{border-bottom:0}
+.av{width:2.6rem;height:2.6rem;border-radius:50%;flex:0 0 auto;background:#e2e8f0 center/cover;display:grid;place-items:center;font-weight:700;color:#64748b;font-size:.85rem}
+.item .info{flex:1;min-width:0}
+.item .info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .info small{color:var(--gris)}
+.tag{font-size:.72rem;font-weight:700;padding:.2rem .55rem;border-radius:99px;background:#e2e8f0;color:#334155;white-space:nowrap}
+.tag.ok{background:#dcfce7;color:#166534}.tag.warn{background:#fef3c7;color:#92400e}.tag.err{background:#fee2e2;color:#991b1b}.tag.azul{background:#dbeafe;color:#1e40af}
+.vacio{text-align:center;color:var(--gris);padding:1.5rem .5rem}
+
+/* ---------- Modal / toast ---------- */
+#modal{position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:700px){#modal{align-items:center}}
+#modalBody{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:1.2rem 1.2rem 0 0;padding:1.2rem}
+@media(min-width:700px){#modalBody{border-radius:1.2rem}}
+#modalBody h3{margin:0 0 .5rem}
+.acciones{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1rem}
+#toast{position:fixed;left:50%;bottom:5.5rem;transform:translateX(-50%);z-index:70;background:#0f172a;color:#fff;padding:.7rem 1.1rem;border-radius:.8rem;font-weight:600;font-size:.9rem;max-width:90vw;text-align:center}
+#toast.err{background:var(--err)}
+.foto-edit{display:flex;align-items:center;gap:1rem}
+.foto-edit .av{width:5rem;height:5rem;font-size:1.4rem}
+table.prev{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.6rem}
+table.prev td,table.prev th{border-bottom:1px solid var(--borde);padding:.3rem;text-align:left}
+
+/* ---------- Carnet (medidas reales CR80: 54 × 85.6 mm) ---------- */
+.carnet{width:54mm;height:85.6mm;border-radius:3mm;background:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;
+  font-family:Inter,sans-serif;color:#1f2937;box-shadow:0 6px 20px rgba(15,23,42,.18);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.c-top{width:100%;height:26mm;flex:0 0 auto;background:var(--c1);color:#fff;text-align:center;padding:2.6mm 3mm 0;border-radius:0 0 50% 50%/0 0 5mm 5mm}
+.c-logo{width:8.5mm;height:8.5mm;object-fit:contain;display:block;margin:0 auto 1mm}
+.c-logo.ini{display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.18);font-size:7pt;font-weight:800}
+.c-org{font-size:6.6pt;font-weight:800;text-transform:uppercase;letter-spacing:.15mm;line-height:1.15}
+.c-foto{width:21mm;height:21mm;flex:0 0 auto;border-radius:50%;border:.9mm solid var(--c3);margin-top:-8mm;background:#e5e7eb center/cover;display:grid;place-items:center;font-weight:800;font-size:13pt;color:#6b7280;position:relative}
+.c-ape{font-size:8.6pt;font-weight:800;margin-top:1.4mm;text-transform:uppercase;text-align:center;line-height:1.05;padding:0 2.5mm}
+.c-nom{font-size:6.8pt;color:#4b5563;text-align:center;padding:0 2.5mm}
+.c-grp{background:var(--c2);color:#fff;font-size:5.8pt;font-weight:700;padding:.45mm 2.6mm;border-radius:2mm;margin-top:1mm;max-width:46mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-sec{font-size:7pt;font-weight:800;color:var(--c1);margin-top:.4mm;min-height:2.5mm}
+.c-qr{width:20mm;height:20mm;margin-top:auto}
+.c-qr svg{width:100%;height:100%;display:block}
+.c-pie{font-size:5.2pt;color:#6b7280;margin:.8mm 0 2.6mm;text-align:center;line-height:1.25}
+.c-pie b{color:#111827;letter-spacing:.2mm}
+.c-bar{position:absolute;bottom:0;left:0;right:0;height:1.3mm;background:var(--c1)}
+.prev-carnet{display:grid;place-items:center;padding:1.2rem 0}
+.prev-carnet .carnet{transform:scale(1.35);transform-origin:center;margin:3.5rem 0}
+#printArea{display:none}
+@media print{
+  @page{size:letter;margin:6mm 8mm}
+  body.printing>*:not(#printArea){display:none!important}
+  body.printing{background:#fff}
+  body.printing #printArea{display:block}
+  .hoja{display:grid;grid-template-columns:repeat(3,54mm);grid-auto-rows:85.6mm;gap:3mm 5mm;justify-content:center;break-after:page;page-break-after:always}
+  .hoja:last-child{break-after:auto;page-break-after:auto}
+  .hoja .carnet{box-shadow:none;outline:.15mm dashed #9ca3af}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="login" class="hidden">
+  <div class="login-box">
+    <div class="marca"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM18 18h3v3h-3z"/></svg></span>Asistencia QR</div>
+    <p>Control de asistencia con carnet y código QR para colegios y empresas.</p>
+    <div id="apiBox">
+      <label for="inApi">URL del servidor (Apps Script)</label>
+      <input id="inApi" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+    </div>
+    <p id="apiFija" class="hint hidden">Servidor configurado · <button class="link" id="btnCambiarApi">cambiar</button></p>
+    <label for="inClave">Clave de acceso</label>
+    <input id="inClave" type="password" placeholder="Clave de administrador o de escáner" autocomplete="current-password">
+    <div class="err" id="loginErr"></div>
+    <button class="btn pri" style="width:100%" id="btnEntrar">Entrar</button>
+    <p style="text-align:center;margin-top:1rem"><button class="link" id="btnDemo">Probar en modo demo</button></p>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <header class="top">
+    <img id="hLogo" class="hidden" alt="">
+    <div class="org"><span id="hOrg">—</span><small id="hSub">Asistencia QR</small></div>
+    <span class="pill" id="hRol"></span>
+    <button class="btn sm" id="btnSalir" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.3)">Salir</button>
+  </header>
+
+  <main>
+    <!-- Escanear -->
+    <section class="vista" id="v-escanear">
+      <div class="scan-wrap">
+        <div class="cam">
+          <video id="video" playsinline muted></video>
+          <div class="marco"></div><div class="linea hidden" id="linea"></div>
+          <div class="cam-msg" id="camMsg">Toca «Iniciar cámara» y apunta al código QR del carnet</div>
+        </div>
+        <div class="row">
+          <button class="btn pri" id="btnCam">Iniciar cámara</button>
+          <button class="btn" id="btnFlip">Cambiar cámara</button>
+        </div>
+        <div class="contador"><span id="cntLbl">Presentes hoy</span><b id="cntHoy">–</b><small id="cntTotal"></small></div>
+        <div class="card demoOnly">
+          <h3>Modo demo</h3>
+          <p class="hint" style="margin:0 0 .6rem">Simula que alguien pasa su carnet por la cámara.</p>
+          <button class="btn ok" id="btnSimular">Simular escaneo</button>
+        </div>
+        <div class="card adminOnly">
+          <label style="margin-top:0">Marcar sin carnet (ID o documento)</label>
+          <div class="row"><input id="manualId" placeholder="Ej: A0012 o 8-123-456"><button class="btn" id="btnManual">Marcar</button></div>
+        </div>
+        <div class="card">
+          <label style="margin-top:0">Nombre de este equipo</label>
+          <input id="inDisp" placeholder="Ej: Puerta principal">
+          <label>¿Sin cámara? Sube una foto del código QR</label>
+          <input type="file" id="qrFoto" accept="image/*">
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel -->
+    <section class="vista hidden" id="v-panel">
+      <div class="row" style="margin-bottom:1rem"><input type="date" id="pFecha"><button class="btn" id="pRefrescar">Actualizar</button></div>
+      <div class="kpis">
+        <div class="kpi"><small id="kTotalLbl">Inscritos</small><b id="kTotal">–</b></div>
+        <div class="kpi"><small>Presentes</small><b id="kPres" style="color:var(--ok)">–</b></div>
+        <div class="kpi"><small>Llegaron tarde</small><b id="kTarde" style="color:var(--warn)">–</b></div>
+        <div class="kpi"><small>Ausentes</small><b id="kAus" style="color:var(--err)">–</b></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3 id="pGruposTit">Por grado</h3><div id="pGrupos"></div></div>
+        <div class="card">
+          <div class="seg"><button data-t="ult" class="on">Últimos registros</button><button data-t="aus">Ausentes</button></div>
+          <div id="pLista"></div>
+        </div>
+      </div>
+      <div class="card adminOnly">
+        <h3>Exportar asistencias</h3>
+        <div class="row"><div><label>Desde</label><input type="date" id="eDesde"></div><div><label>Hasta</label><input type="date" id="eHasta"></div></div>
+        <div class="acciones"><button class="btn pri" id="btnExportar">Descargar CSV (Excel)</button></div>
+        <p class="hint">Todo queda también en la hoja «Asistencias» de tu Google Sheets.</p>
+      </div>
+    </section>
+
+    <!-- Personas -->
+    <section class="vista hidden" id="v-personas">
+      <div class="row" style="margin-bottom:.7rem"><input id="qBuscar" placeholder="Buscar por nombre, ID o documento"><select id="qGrupo" style="max-width:40%"></select></div>
+      <div class="row" style="margin-bottom:1rem;flex-wrap:wrap">
+        <button class="btn pri" id="btnNueva">+ Nuevo</button>
+        <button class="btn" id="btnImportar">Importar desde Excel</button>
+        <span id="pCuenta" class="hint" style="flex:1;text-align:right;margin:0"></span>
+      </div>
+      <div class="card" style="padding:.4rem 1rem"><div id="lista"></div></div>
+    </section>
+
+    <!-- Carnets -->
+    <section class="vista hidden" id="v-carnets">
+      <div class="grid2">
+        <div class="card">
+          <h3>Diseño del carnet</h3>
+          <label>Nombre de la institución</label><input id="dOrg" data-k="NOMBRE_ORG">
+          <label>Texto al pie</label><input id="dLey" data-k="LEYENDA">
+          <div class="row">
+            <div><label>Color principal</label><input type="color" data-k="COLOR_1"></div>
+            <div><label id="dC2Lbl">Color del grado</label><input type="color" data-k="COLOR_2"></div>
+            <div><label>Borde de la foto</label><input type="color" data-k="COLOR_3"></div>
+          </div>
+          <label>Logo / escudo</label>
+          <div class="row"><input type="file" id="dLogo" accept="image/*"><button class="btn sm peligro" id="dQuitarLogo">Quitar</button></div>
+          <div class="acciones"><button class="btn pri" id="btnGuardarDiseno">Guardar diseño</button></div>
+        </div>
+        <div class="card"><h3>Vista previa en tiempo real</h3><div class="prev-carnet" id="cPrev"></div></div>
+      </div>
+      <div class="card">
+        <h3>Imprimir carnets en PDF</h3>
+        <div class="row"><div><label id="fGrupoLbl">Grado</label><select id="fGrupo"></select></div><div><label id="fSecLbl">Sección</label><select id="fSec"></select></div></div>
+        <p class="hint" id="cCuenta"></p>
+        <div class="acciones"><button class="btn pri" id="btnImprimir">Generar PDF / Imprimir</button></div>
+        <p class="hint">En la ventana de impresión elige «Guardar como PDF». Hoja carta, 9 carnets por página en tamaño tarjeta (5.4 × 8.56 cm), con línea de corte.</p>
+      </div>
+    </section>
+
+    <!-- Ajustes -->
+    <section class="vista hidden" id="v-ajustes">
+      <div class="card">
+        <h3>Institución y horario</h3>
+        <div class="row">
+          <div><label>Tipo</label><select data-k="TIPO_ORG"><option>Colegio</option><option>Empresa</option></select></div>
+          <div><label>Registro</label><select data-k="MODO"><option>Solo entrada</option><option>Entrada y salida</option></select></div>
+        </div>
+        <div class="row">
+          <div><label>Hora de entrada</label><input type="time" data-k="HORA_ENTRADA"></div>
+          <div><label>Hora de salida</label><input type="time" data-k="HORA_SALIDA"></div>
+        </div>
+        <div class="row">
+          <div><label>Tolerancia (min)</label><input type="number" min="0" data-k="TOLERANCIA_MIN"></div>
+          <div><label>Ignorar doble escaneo (min)</label><input type="number" min="0" data-k="ANTIREBOTE_MIN"></div>
+        </div>
+        <p class="hint">Después de la hora de entrada + tolerancia, el registro se marca como «Tarde». En modo «Entrada y salida», el primer escaneo del día es entrada y el siguiente es salida.</p>
+      </div>
+      <div class="card">
+        <h3>Claves de acceso</h3>
+        <div class="row">
+          <div><label>Administrador</label><input data-k="CLAVE_ADMIN"></div>
+          <div><label>Escáner (porteros / docentes)</label><input data-k="CLAVE_ESCANER"></div>
+        </div>
+        <p class="hint">Con la clave de escáner solo se puede marcar asistencia y ver el panel del día.</p>
+      </div>
+      <div class="acciones" style="margin-bottom:1rem"><button class="btn pri" id="btnGuardarAjustes">Guardar ajustes</button></div>
+      <div class="card">
+        <h3>Enlace para los equipos de escaneo</h3>
+        <p class="hint" style="margin-top:0">Abre este enlace en el celular o tablet de la entrada e ingresa la clave de escáner.</p>
+        <div class="row"><input id="linkComp" readonly><button class="btn" id="btnCopiar">Copiar</button></div>
+      </div>
+      <div class="card demoOnly">
+        <h3>Demo</h3>
+        <p class="hint" style="margin-top:0">Los datos del demo viven solo en este navegador. Clave admin: <b>admin</b> · clave escáner: <b>1234</b></p>
+        <div class="acciones"><button class="btn peligro" id="btnResetDemo">Reiniciar demo</button></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs" id="nav">
+    <button data-v="escanear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4M7 8h3v3H7zM14 8h3v3h-3zM7 14h3v3H7zM14 14h3v3h-3z"/></svg>Escanear</button>
+    <button data-v="panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V11M10 20V5M16 20v-6M22 20H2"/></svg>Panel</button>
+    <button data-v="personas" class="adminOnly"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/></svg><span id="navPersonas">Alumnos</span></button>
+    <button data-v="carnets" class="adminOnly"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2.5" width="14" height="19" rx="2"/><circle cx="12" cy="9" r="2.5"/><path d="M8.5 15.5h7M9.5 18.5h5"/></svg>Carnets</button>
+    <button data-v="ajustes" class="adminOnly"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Ajustes</button>
+  </nav>
+</div>
+
+<div id="resultado" class="res hidden"><div class="res-card" id="resCard"></div></div>
+<div id="modal" class="hidden"><div id="modalBody"></div></div>
+<div id="toast" class="hidden"></div>
+<div id="printArea"></div>
+
+<!-- Copia del backend (Code.gs) usada solo por el modo demo, que la ejecuta en el navegador con una hoja simulada. -->
+<script type="text/plain" id="gas-src">/*__GAS_SOURCE__*/</script>
+
+<script>
+/* =========================================================
+   Utilidades
+   ========================================================= */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('aqr_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('aqr_' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('aqr_' + k); } catch (e) {} }
+};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const iniciales = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(x => x[0] || '').join('').toUpperCase();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/** Convierte un enlace de Google Drive en una URL de imagen directa. */
+function imgURL(u) {
+  u = String(u || '').trim();
+  if (!u) return '';
+  const m = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})/);
+  return m ? 'https://lh3.googleusercontent.com/d/' + m[1] : u;
+}
+function avatar(foto, nombre, cls = 'av') {
+  const u = imgURL(foto);
+  return u ? `<div class="${cls}" style="background-image:url('${esc(u)}')"></div>` : `<div class="${cls}">${esc(iniciales(nombre))}</div>`;
+}
+
+let toastT;
+function toast(msg, err) {
+  const t = $('#toast'); t.textContent = msg; t.className = err ? 'err' : ''; clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.add('hidden'), 3200);
+}
+function modal(html, alMontar) { $('#modalBody').innerHTML = html; $('#modal').classList.remove('hidden'); if (alMontar) alMontar($('#modalBody')); }
+function cerrarModal() { $('#modal').classList.add('hidden'); $('#modalBody').innerHTML = ''; }
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') cerrarModal(); });
+function confirmar(msg, si = 'Sí, continuar') {
+  return new Promise(res => modal(`<h3>¿Seguro?</h3><p>${esc(msg)}</p><div class="acciones"><button class="btn" id="cNo">Cancelar</button><button class="btn pri" id="cSi">${esc(si)}</button></div>`,
+    b => { b.querySelector('#cNo').onclick = () => { cerrarModal(); res(false); }; b.querySelector('#cSi').onclick = () => { cerrarModal(); res(true); }; }));
+}
+
+/** Reduce una imagen en el navegador antes de subirla (fotos cuadradas para carnet, logos con transparencia). */
+function leerImagen(file, max, cuadrada, mime = 'image/jpeg') {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'), g = c.getContext('2d');
+      let { width: w, height: h } = img;
+      if (cuadrada) {
+        const s = Math.min(w, h), sx = (w - s) / 2, sy = h > w ? (h - s) * 0.2 : 0;
+        c.width = c.height = Math.min(max, s);
+        g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+        g.drawImage(img, sx, sy, s, s, 0, 0, c.width, c.height);
+      } else {
+        const k = Math.min(1, max / Math.max(w, h)); c.width = Math.round(w * k); c.height = Math.round(h * k);
+        g.drawImage(img, 0, 0, c.width, c.height);
+      }
+      URL.revokeObjectURL(img.src);
+      res(c.toDataURL(mime, 0.85));
+    };
+    img.onerror = () => rej(new Error('No se pudo leer la imagen'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+/* =========================================================
+   Estado y conexión
+   ========================================================= */
+const S = { api: '', clave: '', rol: null, cfg: {}, personas: null, demo: false, vista: 'escanear' };
+
+function L() {
+  return S.cfg.TIPO_ORG === 'Empresa'
+    ? { p: 'Colaborador', ps: 'Colaboradores', g: 'Departamento', gs: 'departamento', s: 'Cargo', ins: 'Colaboradores' }
+    : { p: 'Alumno', ps: 'Alumnos', g: 'Grado', gs: 'grado', s: 'Sección', ins: 'Inscritos' };
+}
+
+async function api(accion, datos = {}) {
+  const payload = Object.assign({ accion, clave: S.clave }, datos);
+  if (S.demo) {
+    await sleep(120);
+    const r = Demo.llamar(payload);
+    if (!r.ok) throw new Error(r.error || 'Error');
+    return r;
+  }
+  let r;
+  try {
+    r = await fetch(S.api, { method: 'POST', body: JSON.stringify(payload) });  // text/plain: sin preflight CORS
+  } catch (e) { throw new Error('Sin conexión con el servidor. Revisa internet y la URL.'); }
+  let j;
+  try { j = await r.json(); } catch (e) { throw new Error('Respuesta inválida del servidor. ¿La implementación tiene acceso «Cualquier usuario»?'); }
+  if (!j.ok) throw new Error(j.error || 'Error');
+  return j;
+}
+
+/* =========================================================
+   Modo demo: ejecuta el mismo Code.gs en el navegador
+   ========================================================= */
+const Demo = {
+  g: null, hojas: null,
+  iniciar() {
+    this.hojas = LS.get('demo_hojas', null);
+    const nuevo = !this.hojas;
+    if (nuevo) this.hojas = {};
+    const H = this.hojas, self = this;
+    const rango = (sh, r, c, nr, nc) => ({
+      getDisplayValues() { const o = []; for (let i = 0; i < nr; i++) { const f = []; for (let j = 0; j < nc; j++) { const v = (sh.d[r - 1 + i] || [])[c - 1 + j]; f.push(v == null ? '' : String(v)); } o.push(f); } return o; },
+      setValues(v) { v.forEach((f, i) => f.forEach((x, j) => { sh.d[r - 1 + i] = sh.d[r - 1 + i] || []; sh.d[r - 1 + i][c - 1 + j] = x; })); return this; },
+      setValue(x) { return this.setValues([[x]]); },
+      setNumberFormat() { return this; }, setFontWeight() { return this; }, setBackground() { return this; }, setFontColor() { return this; }
+    });
+    const hoja = sh => ({
+      getRange: (r, c, nr = 1, nc = 1) => rango(sh, r, c, nr, nc),
+      getLastRow() { for (let i = sh.d.length - 1; i >= 0; i--) if (sh.d[i] && sh.d[i].some(x => x !== '' && x != null)) return i + 1; return 0; },
+      getMaxRows: () => sh.max, insertRowsAfter: (a, n) => { sh.max += n; }, setFrozenRows() {}
+    });
+    const ss = { getSheetByName: n => H[n] ? hoja(H[n]) : null, insertSheet: n => { H[n] = { d: [], max: 100000 }; return hoja(H[n]); }, getName: () => 'Demo' };
+    const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, () => (Math.random() * 16 | 0).toString(16)));
+    const mocks = {
+      SpreadsheetApp: { getActive: () => ss, getUi: () => { throw new Error('sin UI'); } },
+      LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
+      Session: { getScriptTimeZone: () => 'local' },
+      Utilities: {
+        formatDate: (d, tz, f) => f === 'yyyy-MM-dd' ? d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) : pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()),
+        getUuid: uuid, base64Decode: x => x, newBlob: () => ({})
+      },
+      DriveApp: { createFolder: () => ({ getId: () => 'demo' }), getFolderById: () => ({}) },
+      ContentService: { createTextOutput: s => ({ setMimeType: () => JSON.parse(s) }), MimeType: { JSON: 1 } },
+      Logger: { log() {} }
+    };
+    const src = $('#gas-src').textContent +
+      '\n;guardarImagen_ = function (b64, mime) { return "data:" + mime + ";base64," + b64; };' +
+      '\nreturn { doPost, instalar, setConfig_, importarPersonas_, agregarFilas_, hoja_, leerPersonas_, leerConfig_, COLS_A, HOJA_ASIS };';
+    this.g = new Function(...Object.keys(mocks), src)(...Object.values(mocks));
+    if (nuevo) this.sembrar();
+  },
+  sembrar() {
+    const g = this.g;
+    g.instalar();
+    g.setConfig_({ NOMBRE_ORG: 'Colegio Valle Alto', CLAVE_ADMIN: 'admin', CLAVE_ESCANER: '1234', HORA_ENTRADA: '07:00', LEYENDA: 'Año lectivo ' + new Date().getFullYear() });
+    const nombres = [['Axel Francisco', 'Zuñiga Rojas', '4to', 'D'], ['Valeria', 'Castillo Pérez', '4to', 'D'], ['Mateo', 'Gutiérrez Sánchez', '4to', 'D'],
+      ['Camila', 'Herrera Vega', '4to', 'D'], ['Santiago', 'Morales Díaz', '5to', 'A'], ['Isabella', 'Ríos Campos', '5to', 'A'], ['Sebastián', 'Navarro Luna', '5to', 'A'],
+      ['Lucía', 'Fernández Mora', '5to', 'A'], ['Diego', 'Vargas Ortiz', '6to', 'B'], ['Mariana', 'Jiménez Cruz', '6to', 'B'], ['Gabriel', 'Mendoza Ruiz', '6to', 'B'],
+      ['Sofía', 'Delgado Peña', '6to', 'B']];
+    g.importarPersonas_(nombres.map((n, i) => ({ nombres: n[0], apellidos: n[1], grupo: n[2], seccion: n[3], documento: '8-9' + pad(i + 10) + '-' + (1000 + i * 37) })), g.leerConfig_());
+    const ps = g.leerPersonas_(), hoy = hoyISO();
+    const horas = ['06:41:12', '06:48:30', '06:52:05', '06:55:47', '07:03:19', '07:14:02', '07:22:40'];
+    g.agregarFilas_(g.hoja_(g.HOJA_ASIS, g.COLS_A), horas.map((h, i) => {
+      const p = ps[i * 1 + (i > 3 ? 1 : 0)];
+      return [hoy, h, p.id, p.nombres + ' ' + p.apellidos, p.grupo, p.seccion, 'Entrada', h > '07:10' ? 'Tarde' : 'A tiempo', 'Puerta principal'];
+    }));
+    this.guardar();
+  },
+  llamar(payload) { const r = this.g.doPost({ postData: { contents: JSON.stringify(payload) } }); this.guardar(); return r; },
+  guardar() { LS.set('demo_hojas', this.hojas); },
+  reiniciar() { LS.del('demo_hojas'); this.iniciar(); },
+  tokenAlAzar() {
+    const ps = this.g.leerPersonas_().filter(p => p.activo !== 'No');
+    const hoy = hoyISO(), sh = this.hojas[this.g.HOJA_ASIS].d;
+    const vinieron = new Set(sh.filter(r => r[0] === hoy).map(r => r[2]));
+    const pend = ps.filter(p => !vinieron.has(p.id));
+    const p = (pend.length ? pend : ps)[Math.floor(Math.random() * (pend.length || ps.length))];
+    return p ? 'AQR:' + p.token : '';
+  }
+};
+
+/* =========================================================
+   Inicio de sesión
+   ========================================================= */
+function apiFija(u) {
+  $('#apiBox').classList.toggle('hidden', !!u);
+  $('#apiFija').classList.toggle('hidden', !u);
+  $('#inApi').value = u || '';
+}
+$('#btnCambiarApi').onclick = () => apiFija('');
+
+async function entrar(url, clave, demo) {
+  $('#loginErr').textContent = '';
+  S.api = url; S.clave = clave; S.demo = !!demo;
+  if (demo) Demo.iniciar();
+  try {
+    const r = await api('login');
+    S.rol = r.rol; S.cfg = r.config;
+    LS.set('sesion', { api: url, clave, demo: !!demo });
+    if (!demo) LS.set('api', url);
+    abrirApp();
+  } catch (e) {
+    $('#loginErr').textContent = e.message;
+    mostrarLogin();
+  }
+}
+
+$('#btnEntrar').onclick = () => {
+  const u = $('#inApi').value.trim(), c = $('#inClave').value.trim();
+  if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(u)) { $('#loginErr').textContent = 'Pega la URL de la aplicación web de Apps Script (termina en /exec).'; return; }
+  if (!c) { $('#loginErr').textContent = 'Escribe la clave.'; return; }
+  entrar(u, c, false);
+};
+$('#inClave').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnEntrar').click(); });
+$('#btnDemo').onclick = () => entrar('', 'admin', true);
+
+function mostrarLogin() {
+  $('#app').classList.add('hidden'); $('#login').classList.remove('hidden');
+  apiFija(LS.get('api', ''));
+}
+
+$('#btnSalir').onclick = () => {
+  camParar(); LS.del('sesion'); S.rol = null; S.personas = null;
+  document.body.className = ''; $('#inClave').value = ''; mostrarLogin();
+};
+
+function abrirApp() {
+  $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+  document.body.className = 'rol-' + S.rol + (S.demo ? ' demo' : '');
+  pintarMarca();
+  ir(S.rol === 'admin' ? LS.get('vista', 'escanear') : 'escanear');
+}
+
+function pintarMarca() {
+  const c = S.cfg, l = L();
+  $('#hOrg').textContent = c.NOMBRE_ORG || 'Asistencia QR';
+  $('#hSub').textContent = 'Asistencia QR' + (S.demo ? ' · DEMO' : '');
+  $('#hRol').textContent = S.rol === 'admin' ? 'Administrador' : 'Escáner';
+  const lg = imgURL(c.LOGO_URL);
+  $('#hLogo').classList.toggle('hidden', !lg); if (lg) $('#hLogo').src = lg;
+  $('#navPersonas').textContent = l.ps;
+  $('#kTotalLbl').textContent = l.ins;
+  $('#pGruposTit').textContent = 'Por ' + l.gs;
+  $('#fGrupoLbl').textContent = l.g; $('#fSecLbl').textContent = l.s;
+  $('#dC2Lbl').textContent = 'Color del ' + l.gs;
+}
+
+/* =========================================================
+   Navegación
+   ========================================================= */
+$$('#nav button').forEach(b => b.onclick = () => ir(b.dataset.v));
+function ir(v) {
+  if (S.rol !== 'admin' && !['escanear', 'panel'].includes(v)) v = 'escanear';
+  if (S.vista === 'escanear' && v !== 'escanear') camParar();
+  S.vista = v; if (S.rol === 'admin') LS.set('vista', v);
+  $$('.vista').forEach(s => s.classList.toggle('hidden', s.id !== 'v-' + v));
+  $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  clearInterval(Panel.timer);
+  ({ escanear: vistaEscanear, panel: vistaPanel, personas: vistaPersonas, carnets: vistaCarnets, ajustes: vistaAjustes })[v]();
+  window.scrollTo(0, 0);
+}
+
+async function cargarPersonas(forzar) {
+  if (!S.personas || forzar) S.personas = (await api('personas')).personas;
+  return S.personas;
+}
+
+/* =========================================================
+   Escáner
+   ========================================================= */
+const Scan = { stream: null, timer: null, ocupado: false, detectando: false, ultimo: '', ultimoT: 0, det: null, canvas: null, facing: LS.get('facing', 'environment') };
+$('#inDisp').value = LS.get('dispositivo', '');
+$('#inDisp').onchange = e => LS.set('dispositivo', e.target.value.trim());
+
+function vistaEscanear() {
+  $('#cntLbl').textContent = 'Presentes hoy';
+  api('resumen').then(r => { $('#cntHoy').textContent = r.presentes; $('#cntTotal').textContent = 'de ' + r.total; }).catch(() => {});
+}
+
+async function camIniciar() {
+  const msg = $('#camMsg');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    msg.textContent = 'Este navegador no permite usar la cámara aquí. Abre la app desde su enlace https en Chrome o Safari, o sube una foto del QR.'; return;
+  }
+  camParar();
+  msg.textContent = 'Abriendo cámara…'; msg.classList.remove('hidden');
+  try {
+    Scan.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: Scan.facing }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+  } catch (e) {
+    msg.textContent = 'No se pudo abrir la cámara (' + (e.name === 'NotAllowedError' ? 'permiso denegado' : e.message) + '). Revisa los permisos del navegador.'; return;
+  }
+  const v = $('#video'); v.srcObject = Scan.stream; await v.play().catch(() => {});
+  msg.classList.add('hidden'); $('#linea').classList.remove('hidden');
+  $('#btnCam').textContent = 'Detener cámara';
+  if ('BarcodeDetector' in window && !Scan.det) {
+    try { const f = await BarcodeDetector.getSupportedFormats(); if (f.includes('qr_code')) Scan.det = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) {}
+  }
+  Scan.timer = setInterval(leerCuadro, 160);
+}
+function camParar() {
+  clearInterval(Scan.timer); Scan.timer = null;
+  if (Scan.stream) Scan.stream.getTracks().forEach(t => t.stop());
+  Scan.stream = null;
+  $('#linea').classList.add('hidden'); $('#camMsg').classList.remove('hidden');
+  $('#camMsg').textContent = 'Toca «Iniciar cámara» y apunta al código QR del carnet';
+  $('#btnCam').textContent = 'Iniciar cámara';
+}
+$('#btnCam').onclick = () => Scan.stream ? camParar() : camIniciar();
+$('#btnFlip').onclick = () => { Scan.facing = Scan.facing === 'environment' ? 'user' : 'environment'; LS.set('facing', Scan.facing); camIniciar(); };
+
+function decodificarCanvas(fuente, w, h) {
+  const c = Scan.canvas || (Scan.canvas = document.createElement('canvas'));
+  const k = Math.min(1, 720 / Math.max(w, h)); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(fuente, 0, 0, c.width, c.height);
+  const d = g.getImageData(0, 0, c.width, c.height);
+  const r = window.jsQR ? jsQR(d.data, c.width, c.height, { inversionAttempts: 'attemptBoth' }) : null;
+  return r ? r.data : null;
+}
+async function leerCuadro() {
+  const v = $('#video');
+  if (Scan.ocupado || Scan.detectando || v.readyState < 2 || !v.videoWidth) return;
+  Scan.detectando = true;
+  let code = null;
+  try {
+    if (Scan.det) { const r = await Scan.det.detect(v); if (r[0]) code = r[0].rawValue; }
+    else code = decodificarCanvas(v, v.videoWidth, v.videoHeight);
+  } catch (e) { Scan.det = null; }
+  Scan.detectando = false;
+  if (code) procesar({ token: code });
+}
+
+$('#qrFoto').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  const img = new Image(); img.src = URL.createObjectURL(f); await img.decode().catch(() => {});
+  const code = decodificarCanvas(img, img.naturalWidth, img.naturalHeight);
+  if (code) procesar({ token: code }, true); else toast('No se encontró un código QR en la foto', true);
+};
+$('#btnManual').onclick = () => { const id = $('#manualId').value.trim(); if (id) { procesar({ id }, true); $('#manualId').value = ''; } };
+$('#btnSimular').onclick = () => procesar({ token: Demo.tokenAlAzar() }, true);
+
+async function procesar(datos, forzar) {
+  const clave = datos.token || datos.id;
+  if (Scan.ocupado || !clave) return;
+  if (!forzar && clave === Scan.ultimo && Date.now() - Scan.ultimoT < 4000) return;
+  Scan.ocupado = true; Scan.ultimo = clave; Scan.ultimoT = Date.now();
+  mostrarResultado({ cargando: true });
+  try {
+    const r = await api('escanear', Object.assign({}, datos, { dispositivo: $('#inDisp').value.trim() || 'Escáner' }));
+    if (r.presentes != null) $('#cntHoy').textContent = r.presentes;
+    mostrarResultado(r);
+  } catch (e) {
+    mostrarResultado({ resultado: 'error', mensaje: e.message });
+  }
+}
+
+function sonido(ok) {
+  try {
+    const A = window.AudioContext || window.webkitAudioContext; Scan.audio = Scan.audio || new A();
+    const ctx = Scan.audio, t = ctx.currentTime;
+    (ok ? [880, 1320] : [300, 220]).forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; o.type = ok ? 'sine' : 'square';
+      g.gain.setValueAtTime(.18, t + i * .12); g.gain.exponentialRampToValueAtTime(.001, t + i * .12 + .11);
+      o.connect(g); g.connect(ctx.destination); o.start(t + i * .12); o.stop(t + i * .12 + .12);
+    });
+  } catch (e) {}
+  if (navigator.vibrate) navigator.vibrate(ok ? 80 : [120, 60, 120]);
+}
+
+let resT;
+function mostrarResultado(r) {
+  const box = $('#resultado'), card = $('#resCard');
+  clearTimeout(resT); box.classList.remove('hidden');
+  if (r.cargando) { card.innerHTML = '<div class="res-foto">…</div><h2>Verificando…</h2>'; return; }
+  const p = r.persona || {};
+  let color, icono, estado, ms = 3200;
+  if (r.resultado === 'registrado') {
+    const reg = r.registro;
+    if (reg.tipo === 'Salida') { color = 'var(--pri)'; icono = '↩'; estado = 'Salida registrada · ' + reg.hora.slice(0, 5); }
+    else if (reg.estado === 'Tarde') { color = 'var(--warn)'; icono = '✓'; estado = 'Asistencia registrada · Tarde ' + reg.hora.slice(0, 5); }
+    else { color = 'var(--ok)'; icono = '✓'; estado = 'Asistencia registrada · ' + reg.hora.slice(0, 5); }
+    ms = 2300; sonido(true);
+  } else if (r.resultado === 'repetido') { color = 'var(--warn)'; icono = '!'; estado = r.mensaje; sonido(false); }
+  else { color = 'var(--err)'; icono = '✕'; estado = r.mensaje || 'Código no válido'; sonido(false); }
+  card.innerHTML = `
+    <div class="res-icono" style="background:${color}">${icono}</div>
+    ${p.nombre ? avatar(p.foto, p.nombre, 'res-foto') : ''}
+    <h2>${esc(p.nombre || (r.resultado === 'error' ? 'Error' : 'No reconocido'))}</h2>
+    <p class="sub">${esc([p.grupo, p.seccion].filter(Boolean).join(' · '))}${p.id ? ' · ' + esc(p.id) : ''}</p>
+    <span class="res-estado" style="background:${color}">${esc(estado)}</span>
+    <div class="res-barra" style="color:${color};animation-duration:${ms}ms"></div>`;
+  resT = setTimeout(cerrarResultado, ms);
+}
+function cerrarResultado() { clearTimeout(resT); $('#resultado').classList.add('hidden'); Scan.ocupado = false; }
+$('#resultado').onclick = cerrarResultado;
+
+/* =========================================================
+   Panel
+   ========================================================= */
+const Panel = { timer: null, datos: null, tab: 'ult' };
+$('#pFecha').value = hoyISO();
+$('#eDesde').value = hoyISO().slice(0, 8) + '01'; $('#eHasta').value = hoyISO();
+$('#pRefrescar').onclick = () => cargarPanel();
+$('#pFecha').onchange = () => cargarPanel();
+$$('#v-panel .seg button').forEach(b => b.onclick = () => { Panel.tab = b.dataset.t; $$('#v-panel .seg button').forEach(x => x.classList.toggle('on', x === b)); pintarLista(); });
+
+function vistaPanel() { cargarPanel(); Panel.timer = setInterval(() => { if ($('#pFecha').value === hoyISO()) cargarPanel(true); }, 30000); }
+
+async function cargarPanel(silencioso) {
+  try {
+    const r = await api('resumen', { fecha: $('#pFecha').value });
+    Panel.datos = r;
+    $('#kTotal').textContent = r.total; $('#kPres').textContent = r.presentes;
+    $('#kTarde').textContent = r.tarde; $('#kAus').textContent = r.total - r.presentes;
+    const gs = Object.keys(r.porGrupo).sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+    $('#pGrupos').innerHTML = gs.length ? gs.map(g => {
+      const x = r.porGrupo[g], pct = x.total ? Math.round(x.presentes * 100 / x.total) : 0;
+      return `<div class="barra"><div class="t"><span>${esc(g)}</span><span>${x.presentes}/${x.total} · ${pct}%</span></div><div class="b"><i style="width:${pct}%"></i></div></div>`;
+    }).join('') : '<div class="vacio">Aún no hay registros</div>';
+    pintarLista();
+  } catch (e) { if (!silencioso) toast(e.message, true); }
+}
+function pintarLista() {
+  const r = Panel.datos; if (!r) return;
+  const box = $('#pLista');
+  if (Panel.tab === 'ult') {
+    box.innerHTML = r.ultimos.length ? r.ultimos.map(x => {
+      const cls = x.tipo === 'Salida' ? 'azul' : x.estado === 'Tarde' ? 'warn' : 'ok';
+      return `<div class="item">${avatar('', x.nombre)}<div class="info"><b>${esc(x.nombre)}</b><small>${esc([x.grupo, x.seccion].filter(Boolean).join(' · '))} · ${esc(x.dispositivo)}</small></div>
+        <div style="text-align:right"><div style="font-weight:700">${esc(x.hora.slice(0, 5))}</div><span class="tag ${cls}">${esc(x.tipo === 'Salida' ? 'Salida' : x.estado)}</span></div></div>`;
+    }).join('') : '<div class="vacio">Sin registros este día</div>';
+  } else {
+    box.innerHTML = r.ausentes.length ? r.ausentes.map(x => `<div class="item">${avatar(x.foto, x.nombre)}<div class="info"><b>${esc(x.nombre)}</b><small>${esc([x.grupo, x.seccion].filter(Boolean).join(' · '))} · ${esc(x.id)}</small></div><span class="tag err">Ausente</span></div>`).join('')
+      : '<div class="vacio">¡Nadie ausente!</div>';
+  }
+}
+
+$('#btnExportar').onclick = async () => {
+  try {
+    const r = await api('reporte', { desde: $('#eDesde').value, hasta: $('#eHasta').value });
+    if (!r.filas.length) { toast('No hay registros en ese rango'); return; }
+    const csv = '﻿' + [r.columnas].concat(r.filas).map(f => f.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'asistencia_' + $('#eDesde').value + '_a_' + $('#eHasta').value + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast(r.filas.length + ' registros exportados');
+  } catch (e) { toast(e.message, true); }
+};
+
+/* =========================================================
+   Personas
+   ========================================================= */
+async function vistaPersonas() {
+  $('#btnNueva').textContent = '+ Nuevo ' + L().p.toLowerCase();
+  $('#lista').innerHTML = '<div class="vacio">Cargando…</div>';
+  try { await cargarPersonas(true); llenarFiltroGrupos($('#qGrupo'), 'Todos'); pintarPersonas(); }
+  catch (e) { $('#lista').innerHTML = '<div class="vacio">' + esc(e.message) + '</div>'; }
+}
+function grupos() { return [...new Set((S.personas || []).map(p => p.grupo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es', { numeric: true })); }
+function llenarFiltroGrupos(sel, todos) {
+  const v = sel.value;
+  sel.innerHTML = `<option value="">${todos}</option>` + grupos().map(g => `<option>${esc(g)}</option>`).join('');
+  sel.value = grupos().includes(v) ? v : '';
+}
+$('#qBuscar').oninput = () => pintarPersonas();
+$('#qGrupo').onchange = () => pintarPersonas();
+
+function pintarPersonas() {
+  const q = $('#qBuscar').value.trim().toLowerCase(), g = $('#qGrupo').value;
+  const lista = (S.personas || []).filter(p => (!g || p.grupo === g) &&
+    (!q || (p.nombres + ' ' + p.apellidos + ' ' + p.id + ' ' + p.documento).toLowerCase().includes(q)));
+  $('#pCuenta').textContent = lista.length + ' de ' + (S.personas || []).length;
+  $('#lista').innerHTML = lista.length ? lista.map(p => `
+    <div class="item" data-id="${esc(p.id)}" style="cursor:pointer">
+      ${avatar(p.foto, p.nombres + ' ' + p.apellidos)}
+      <div class="info"><b>${esc(p.apellidos ? p.apellidos + ', ' + p.nombres : p.nombres)}</b><small>${esc(p.id)} · ${esc([p.grupo, p.seccion].filter(Boolean).join(' · ') || 'Sin ' + L().gs)}</small></div>
+      ${p.activo === 'No' ? '<span class="tag err">Inactivo</span>' : ''}
+    </div>`).join('') : `<div class="vacio">No hay ${L().ps.toLowerCase()} todavía. Agrégalos uno a uno o impórtalos desde Excel.</div>`;
+  $$('#lista .item').forEach(el => el.onclick = () => editarPersona(S.personas.find(p => p.id === el.dataset.id)));
+}
+
+$('#btnNueva').onclick = () => editarPersona(null);
+function editarPersona(p) {
+  const l = L(), nueva = !p; p = p || { nombres: '', apellidos: '', grupo: '', seccion: '', documento: '', foto: '', activo: 'Sí' };
+  let fotoB64 = null;
+  modal(`
+    <h3>${nueva ? 'Nuevo ' + l.p.toLowerCase() : esc(p.id)}</h3>
+    <div class="foto-edit"><div id="mFoto">${avatar(p.foto, p.nombres + ' ' + p.apellidos)}</div>
+      <div style="flex:1"><label style="margin-top:0">Foto</label><input type="file" id="mFotoIn" accept="image/*"></div></div>
+    <div class="row"><div><label>Nombres *</label><input id="mNom" value="${esc(p.nombres)}"></div><div><label>Apellidos</label><input id="mApe" value="${esc(p.apellidos)}"></div></div>
+    <div class="row"><div><label>${l.g}</label><input id="mGru" list="dlGrupos" value="${esc(p.grupo)}"></div><div><label>${l.s}</label><input id="mSec" value="${esc(p.seccion)}"></div></div>
+    <datalist id="dlGrupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist>
+    <label>Documento / cédula</label><input id="mDoc" value="${esc(p.documento)}">
+    <label style="display:flex;gap:.5rem;align-items:center;color:#0f172a"><input type="checkbox" id="mAct" ${p.activo !== 'No' ? 'checked' : ''}> Activo (su carnet funciona)</label>
+    <div class="acciones">
+      ${nueva ? '' : '<button class="btn" id="mCarnet">Ver carnet</button><button class="btn peligro" id="mToken">Carnet perdido</button>'}
+      <button class="btn" id="mCancel">Cancelar</button><button class="btn pri" id="mGuardar">Guardar</button>
+    </div>`, b => {
+    b.querySelector('#mCancel').onclick = cerrarModal;
+    b.querySelector('#mFotoIn').onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const url = await leerImagen(f, 420, true);
+      fotoB64 = url.split(',')[1];
+      b.querySelector('#mFoto').innerHTML = `<div class="av" style="background-image:url('${url}')"></div>`;
+    };
+    if (!nueva) {
+      b.querySelector('#mCarnet').onclick = () => verCarnet(p);
+      b.querySelector('#mToken').onclick = async () => {
+        if (!await confirmar('Se generará un QR nuevo para ' + p.nombres + '. El carnet anterior dejará de funcionar y habrá que imprimir uno nuevo.', 'Generar QR nuevo')) return;
+        try { const r = await api('nuevoToken', { id: p.id }); p.token = r.token; toast('QR nuevo generado. Imprime su carnet otra vez.'); verCarnet(p); }
+        catch (e) { toast(e.message, true); }
+      };
+    }
+    b.querySelector('#mGuardar').onclick = async ev => {
+      const btn = ev.target;
+      const d = { id: nueva ? '' : p.id, nombres: b.querySelector('#mNom').value.trim(), apellidos: b.querySelector('#mApe').value.trim(),
+        grupo: b.querySelector('#mGru').value.trim(), seccion: b.querySelector('#mSec').value.trim(), documento: b.querySelector('#mDoc').value.trim(),
+        activo: b.querySelector('#mAct').checked ? 'Sí' : 'No' };
+      if (!d.nombres) { toast('Escribe el nombre', true); return; }
+      btn.disabled = true; btn.textContent = 'Guardando…';
+      try {
+        const r = await api('guardarPersona', { persona: d, fotoBase64: fotoB64 });
+        await cargarPersonas(true); llenarFiltroGrupos($('#qGrupo'), 'Todos'); pintarPersonas();
+        cerrarModal(); toast((nueva ? 'Agregado: ' : 'Guardado: ') + r.persona.id);
+      } catch (e) { toast(e.message, true); btn.disabled = false; btn.textContent = 'Guardar'; }
+    };
+  });
+}
+
+function verCarnet(p) {
+  modal(`<h3>Carnet de ${esc(p.nombres)}</h3><div class="prev-carnet">${carnetHTML(p, S.cfg)}</div>
+    <div class="acciones"><button class="btn" id="vcCerrar">Cerrar</button><button class="btn pri" id="vcImp">Imprimir este carnet</button></div>`, b => {
+    b.querySelector('#vcCerrar').onclick = cerrarModal;
+    b.querySelector('#vcImp').onclick = () => imprimir([p]);
+  });
+}
+
+$('#btnImportar').onclick = () => {
+  const l = L();
+  let filas = [];
+  modal(`
+    <h3>Importar ${l.ps.toLowerCase()} desde Excel</h3>
+    <p class="hint" style="margin-top:0">Copia las columnas desde Excel o Google Sheets y pégalas aquí, en este orden:<br>
+    <b>Nombres · Apellidos · ${l.g} · ${l.s} · Documento</b> (la fila de títulos es opcional). Los documentos repetidos se omiten.</p>
+    <textarea id="imTxt" rows="8" placeholder="Axel Francisco	Zuñiga Rojas	4to	D	8-123-456"></textarea>
+    <div id="imPrev"></div>
+    <div class="acciones"><button class="btn" id="imCancel">Cancelar</button><button class="btn pri" id="imOk" disabled>Importar</button></div>`, b => {
+    const ta = b.querySelector('#imTxt'), ok = b.querySelector('#imOk');
+    b.querySelector('#imCancel').onclick = cerrarModal;
+    ta.oninput = () => {
+      const lineas = ta.value.split(/\r?\n/).filter(x => x.trim());
+      const sep = ta.value.includes('\t') ? '\t' : ta.value.includes(';') ? ';' : ',';
+      filas = lineas.map(x => x.split(sep).map(c => c.trim().replace(/^"|"$/g, '')))
+        .filter((c, i) => !(i === 0 && /^nombre/i.test(c[0])))
+        .map(c => ({ nombres: c[0] || '', apellidos: c[1] || '', grupo: c[2] || '', seccion: c[3] || '', documento: c[4] || '' }))
+        .filter(f => f.nombres);
+      ok.disabled = !filas.length; ok.textContent = filas.length ? 'Importar ' + filas.length : 'Importar';
+      b.querySelector('#imPrev').innerHTML = filas.length ? `<table class="prev"><tr><th>Nombres</th><th>Apellidos</th><th>${l.g}</th><th>${l.s}</th><th>Doc.</th></tr>` +
+        filas.slice(0, 5).map(f => `<tr><td>${esc(f.nombres)}</td><td>${esc(f.apellidos)}</td><td>${esc(f.grupo)}</td><td>${esc(f.seccion)}</td><td>${esc(f.documento)}</td></tr>`).join('') +
+        `</table>${filas.length > 5 ? '<p class="hint">… y ' + (filas.length - 5) + ' más</p>' : ''}` : '';
+    };
+    ok.onclick = async () => {
+      ok.disabled = true; ok.textContent = 'Importando…';
+      try {
+        const r = await api('importarPersonas', { filas });
+        await cargarPersonas(true); llenarFiltroGrupos($('#qGrupo'), 'Todos'); pintarPersonas(); cerrarModal();
+        toast(r.agregados + ' agregados' + (r.omitidos ? ' · ' + r.omitidos + ' omitidos (repetidos o sin nombre)' : ''));
+      } catch (e) { toast(e.message, true); ok.disabled = false; ok.textContent = 'Importar'; }
+    };
+  });
+};
+
+/* =========================================================
+   Carnets
+   ========================================================= */
+function qrSVG(texto) {
+  const q = qrcode(0, 'M'); q.addData(texto); q.make();
+  const n = q.getModuleCount(); let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c} ${r}h1v1h-1z`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 ${n + 2} ${n + 2}" shape-rendering="crispEdges"><rect x="-1" y="-1" width="${n + 2}" height="${n + 2}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+
+function carnetHTML(p, c) {
+  const logo = imgURL(c.LOGO_URL), foto = imgURL(p.foto), nombre = (p.nombres + ' ' + p.apellidos).trim();
+  const ape = p.apellidos || p.nombres, nom = p.apellidos ? p.nombres : '';
+  return `<div class="carnet" style="--c1:${esc(c.COLOR_1)};--c2:${esc(c.COLOR_2)};--c3:${esc(c.COLOR_3)}">
+    <div class="c-top">${logo ? `<img class="c-logo" src="${esc(logo)}" alt="">` : `<div class="c-logo ini">${esc(iniciales(c.NOMBRE_ORG))}</div>`}<div class="c-org">${esc(c.NOMBRE_ORG)}</div></div>
+    <div class="c-foto" ${foto ? `style="background-image:url('${esc(foto)}')"` : ''}>${foto ? '' : esc(iniciales(nombre))}</div>
+    <div class="c-ape">${esc(ape)}</div><div class="c-nom">${esc(nom)}</div>
+    ${p.grupo ? `<div class="c-grp">${esc(p.grupo)}</div>` : ''}<div class="c-sec">${esc(p.seccion)}</div>
+    <div class="c-qr">${p.token ? qrSVG('AQR:' + p.token) : ''}</div>
+    <div class="c-pie"><b>${esc(p.id)}</b><br>${esc(c.LEYENDA)}</div><div class="c-bar"></div></div>`;
+}
+
+const Dis = { borrador: {}, logoNuevo: null };
+async function vistaCarnets() {
+  Dis.borrador = Object.assign({}, S.cfg); Dis.logoNuevo = null;
+  $$('#v-carnets [data-k]').forEach(i => i.value = Dis.borrador[i.dataset.k] || '');
+  previaCarnet();
+  try { await cargarPersonas(); } catch (e) { toast(e.message, true); }
+  llenarFiltroGrupos($('#fGrupo'), 'Todos'); filtroSecciones(); previaCarnet();
+}
+function previaCarnet() {
+  const ejemplo = (S.personas || []).find(p => p.activo !== 'No') ||
+    { id: L().p[0] + '0001', nombres: 'Axel Francisco', apellidos: 'Zuñiga Rojas', grupo: S.cfg.TIPO_ORG === 'Empresa' ? 'Operaciones' : '4to grado', seccion: S.cfg.TIPO_ORG === 'Empresa' ? 'Analista' : 'D', token: 'DEMO' };
+  $('#cPrev').innerHTML = carnetHTML(ejemplo, Dis.borrador);
+}
+$$('#v-carnets [data-k]').forEach(i => i.oninput = () => { Dis.borrador[i.dataset.k] = i.value; previaCarnet(); });
+$('#dLogo').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  Dis.logoNuevo = await leerImagen(f, 300, false, 'image/png');
+  Dis.borrador.LOGO_URL = Dis.logoNuevo; previaCarnet();
+};
+$('#dQuitarLogo').onclick = () => { Dis.logoNuevo = null; Dis.borrador.LOGO_URL = ''; $('#dLogo').value = ''; previaCarnet(); };
+$('#btnGuardarDiseno').onclick = async e => {
+  const btn = e.target; btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    const v = {}; ['NOMBRE_ORG', 'LEYENDA', 'COLOR_1', 'COLOR_2', 'COLOR_3'].forEach(k => v[k] = Dis.borrador[k] || '');
+    if (Dis.logoNuevo) { const [cab, b64] = Dis.logoNuevo.split(','); await api('subirLogo', { base64: b64, mime: cab.slice(5, cab.indexOf(';')) }); }
+    else if (!Dis.borrador.LOGO_URL) v.LOGO_URL = '';
+    const r = await api('guardarConfig', { valores: v });
+    S.cfg = r.config; Dis.logoNuevo = null; Dis.borrador = Object.assign({}, S.cfg);
+    pintarMarca(); previaCarnet(); toast('Diseño guardado');
+  } catch (err) { toast(err.message, true); }
+  btn.disabled = false; btn.textContent = 'Guardar diseño';
+};
+
+function seleccionCarnets() {
+  const g = $('#fGrupo').value, s = $('#fSec').value;
+  return (S.personas || []).filter(p => p.activo !== 'No' && (!g || p.grupo === g) && (!s || p.seccion === s))
+    .sort((a, b) => (a.grupo + a.seccion + a.apellidos + a.nombres).localeCompare(b.grupo + b.seccion + b.apellidos + b.nombres, 'es', { numeric: true }));
+}
+function filtroSecciones() {
+  const g = $('#fGrupo').value;
+  const secs = [...new Set((S.personas || []).filter(p => !g || p.grupo === g).map(p => p.seccion).filter(Boolean))].sort();
+  $('#fSec').innerHTML = '<option value="">Todas</option>' + secs.map(s => `<option>${esc(s)}</option>`).join('');
+  contarCarnets();
+}
+function contarCarnets() { const n = seleccionCarnets().length; $('#cCuenta').textContent = n + ' carnets · ' + Math.ceil(n / 9) + ' hoja(s)'; }
+$('#fGrupo').onchange = filtroSecciones;
+$('#fSec').onchange = contarCarnets;
+$('#btnImprimir').onclick = () => { const l = seleccionCarnets(); if (!l.length) { toast('No hay carnets para imprimir', true); return; } imprimir(l); };
+
+async function imprimir(lista) {
+  const c = S.vista === 'carnets' ? Dis.borrador : S.cfg;
+  let html = '';
+  for (let i = 0; i < lista.length; i += 9) html += '<div class="hoja">' + lista.slice(i, i + 9).map(p => carnetHTML(p, c)).join('') + '</div>';
+  const area = $('#printArea'); area.innerHTML = html;
+  toast('Preparando ' + lista.length + ' carnet(s)…');
+  // Esperar a que carguen fotos y logo antes de abrir la impresión
+  const urls = [...new Set([...area.querySelectorAll('.c-foto')].map(e => (e.style.backgroundImage.match(/url\("?(.*?)"?\)/) || [])[1]).filter(Boolean)
+    .concat([...area.querySelectorAll('img')].map(i => i.src)))];
+  await Promise.race([Promise.all(urls.map(u => new Promise(r => { const im = new Image(); im.onload = im.onerror = r; im.src = u; }))), sleep(8000)]);
+  document.body.classList.add('printing');
+  window.print();
+}
+window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); $('#printArea').innerHTML = ''; });
+
+/* =========================================================
+   Ajustes
+   ========================================================= */
+function vistaAjustes() {
+  $$('#v-ajustes [data-k]').forEach(i => i.value = S.cfg[i.dataset.k] || '');
+  $('#linkComp').value = S.demo ? '(En modo demo no hay enlace: conecta tu Google Sheets)' : location.origin + location.pathname + '?api=' + encodeURIComponent(S.api);
+}
+$('#btnGuardarAjustes').onclick = async e => {
+  const btn = e.target, v = {};
+  $$('#v-ajustes [data-k]').forEach(i => v[i.dataset.k] = i.value.trim());
+  btn.disabled = true;
+  try {
+    const r = await api('guardarConfig', { valores: v });
+    S.cfg = r.config;
+    if (S.clave !== S.cfg.CLAVE_ADMIN) { S.clave = S.cfg.CLAVE_ADMIN; LS.set('sesion', { api: S.api, clave: S.clave, demo: S.demo }); }
+    pintarMarca(); toast('Ajustes guardados');
+  } catch (err) { toast(err.message, true); }
+  btn.disabled = false;
+};
+$('#btnCopiar').onclick = async () => {
+  try { await navigator.clipboard.writeText($('#linkComp').value); toast('Enlace copiado'); }
+  catch (e) { $('#linkComp').select(); toast('Selecciona y copia el enlace'); }
+};
+$('#btnResetDemo').onclick = async () => {
+  if (!await confirmar('Se borrarán los datos del demo y se cargarán los de ejemplo.', 'Reiniciar')) return;
+  Demo.reiniciar(); S.clave = 'admin'; S.personas = null;
+  const r = await api('login'); S.cfg = r.config; pintarMarca(); vistaAjustes(); toast('Demo reiniciado');
+};
+
+/* =========================================================
+   Arranque
+   ========================================================= */
+(function () {
+  const q = new URLSearchParams(location.search);
+  if (q.get('api')) LS.set('api', q.get('api'));
+  const s = LS.get('sesion', null);
+  if (q.get('demo') !== null && !s) { entrar('', 'admin', true); return; }
+  if (s && (s.api || s.demo)) entrar(s.api, s.clave, s.demo);
+  else mostrarLogin();
+})();
+</script>
+</body>
+</html>
