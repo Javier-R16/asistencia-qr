@@ -14,7 +14,6 @@ Datos en **Google Sheets**; la lógica corre en **Apps Script**; la app es un so
 - **Exportar a CSV (Excel)** por rango de fechas. Todo queda además en la hoja «Asistencias».
 - **Importar desde Excel**: copias y pegas las columnas.
 - **Dos claves**: administrador (todo) y escáner (solo marcar y ver el panel), para porteros y docentes.
-- **Modo demo** con datos de ejemplo para enseñarlo sin instalar nada (`index.html?demo`).
 
 ## Instalación (unos 10 minutos)
 
@@ -50,8 +49,7 @@ Así los datos de cada cliente quedan separados, en su propia hoja de cálculo. 
 | Archivo | Para qué |
 |---|---|
 | `Code.gs` | Backend: va en Apps Script, dentro de la hoja |
-| `index.html` | App web completa; incluye una copia del backend solo para el modo demo |
-| `src/index.template.html` + `build.py` | Fuente de la app; `python3 build.py` regenera `index.html` con el `Code.gs` actual |
+| `index.html` | App web completa (GitHub Pages) |
 
 ## Notas
 
