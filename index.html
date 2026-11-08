@@ -661,10 +661,14 @@ $('#btnExportar').onclick = async () => {
     const r = await api('reporte', { desde: $('#eDesde').value, hasta: $('#eHasta').value });
     if (!r.filas.length) { toast('No hay registros en ese rango'); return; }
     const csv = '﻿' + [r.columnas].concat(r.filas).map(f => f.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    a.download = 'asistencia_' + $('#eDesde').value + '_a_' + $('#eHasta').value + '.csv';
-    document.body.appendChild(a); a.click(); a.remove();
+    const nombre = 'asistencia_' + $('#eDesde').value + '_a_' + $('#eHasta').value + '.csv';
+    if (window.AndroidApp && AndroidApp.guardarArchivo) AndroidApp.guardarArchivo(nombre, csv);  // app Android
+    else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      a.download = nombre;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
     toast(r.filas.length + ' registros exportados');
   } catch (e) { toast(e.message, true); }
 };
@@ -874,7 +878,8 @@ async function imprimir(lista) {
     .concat([...area.querySelectorAll('img')].map(i => i.src)))];
   await Promise.race([Promise.all(urls.map(u => new Promise(r => { const im = new Image(); im.onload = im.onerror = r; im.src = u; }))), sleep(8000)]);
   document.body.classList.add('printing');
-  window.print();
+  if (window.AndroidApp && AndroidApp.imprimir) AndroidApp.imprimir('Carnets ' + (S.cfg.NOMBRE_ORG || ''));  // app Android
+  else window.print();
 }
 window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); $('#printArea').innerHTML = ''; });
 

@@ -1,0 +1,39 @@
+name: Compilar APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Compilar
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace
+      - run: cp android/app/build/outputs/apk/release/app-release.apk AsistenciaQR.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AsistenciaQR-apk
+          path: AsistenciaQR.apk
+      - name: Publicar en Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk
+          name: Asistencia QR (APK para Android)
+          body: Descarga AsistenciaQR.apk e instálala en el celular (permite «instalar apps desconocidas»).
+          files: AsistenciaQR.apk
+          make_latest: true

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Asistencia QR</string>
+    <!-- Dirección que abre la app. Para otro cliente, cambia el valor de api= por la URL /exec de su hoja. -->
+    <string name="app_url" translatable="false" formatted="false">https://javier-r16.github.io/asistencia-qr/?api=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbxsW_jtWFOGNXG_ncZVnFOYxFhB3wEJ6IETVvnx-WDil4YbJ94SAxRAnPhu11E0RAUn1A%2Fexec</string>
+</resources>

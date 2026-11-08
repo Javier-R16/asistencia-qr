@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Tres esquinas de QR + módulos, dentro de la zona segura (33..75) -->
+    <path android:fillColor="#FFFFFF" android:pathData="M33,33h16v16h-16z M59,33h16v16h-16z M33,59h16v16h-16z" />
+    <path android:fillColor="#0B1B3F" android:pathData="M36,36h10v10h-10z M62,36h10v10h-10z M36,62h10v10h-10z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M39,39h4v4h-4z M65,39h4v4h-4z M39,65h4v4h-4z M59,59h6v6h-6z M69,59h6v6h-6z M59,69h6v6h-6z M69,69h6v6h-6z M64,64h6v6h-6z" />
+    <path android:fillColor="#22C55E" android:pathData="M28,53h52v2h-52z" />
+</vector>
